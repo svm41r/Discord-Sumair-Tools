@@ -168,6 +168,14 @@ class GuildMusicState:
             if user_agent:
                 before_opts += f' -user_agent "{user_agent}"'
 
+            import discord.opus
+            if not discord.opus.is_loaded():
+                try:
+                    import bot
+                    bot.init_opus()
+                except Exception as oe:
+                    logger.warning(f"Failed late-loading opus: {oe}")
+
             ffmpeg_bin = get_ffmpeg_binary()
             logger.info(f"Invoking FFmpeg executable: {ffmpeg_bin}")
             raw_source = discord.FFmpegPCMAudio(
@@ -182,8 +190,16 @@ class GuildMusicState:
         except Exception as e:
             logger.exception(f"Error starting track '{next_song.title}': {e}")
             if self.text_channel:
+                err_str = str(e).strip()
+                err_type = type(e).__name__
+                if err_type == "OpusNotLoaded":
+                    err_detail = "OpusNotLoaded: System libopus library missing or could not be loaded."
+                elif not err_str:
+                    err_detail = f"{err_type} (no error detail returned)"
+                else:
+                    err_detail = err_str
                 asyncio.run_coroutine_threadsafe(
-                    self.text_channel.send(f"❌ Failed to stream audio for **{next_song.title}**: `{e}`"),
+                    self.text_channel.send(f"❌ Failed to stream audio for **{next_song.title}**: `{err_detail}`"),
                     self.loop
                 )
             self.play_next()

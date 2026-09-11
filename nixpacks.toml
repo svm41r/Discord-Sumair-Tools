@@ -3,7 +3,7 @@ providers = ["...", "python"]
 [phases.setup]
 nixPkgs = ["...", "ffmpeg", "libopus", "nodejs"]
 nixLibs = ["...", "libopus"]
-aptPkgs = ["ffmpeg", "libopus0"]
+aptPkgs = ["ffmpeg", "libopus0", "libopus-dev"]
 
 [start]
 cmd = "python bot.py"

@@ -236,7 +236,7 @@ def register_error_handlers(bot: SumairToolsBot):
                 await interaction.response.send_message(msg, ephemeral=True)
 
 
-def init_opus():
+def init_opus() -> bool:
     """Ensure libopus is loaded for Discord voice on Linux containers & Windows."""
     import discord.opus
     if discord.opus.is_loaded():
@@ -244,21 +244,30 @@ def init_opus():
         return True
 
     try:
-        discord.opus._load_default()
-        if discord.opus.is_loaded():
+        if discord.opus._load_default():
             logger.info("Default Opus library loaded successfully.")
             return True
     except Exception:
         pass
 
+    import glob
     opus_libs = [
         "libopus.so.0",
         "libopus.so",
         "opus",
-        "/usr/lib/libopus.so.0",
         "/usr/lib/x86_64-linux-gnu/libopus.so.0",
+        "/usr/lib/x86_64-linux-gnu/libopus.so",
         "/usr/lib/aarch64-linux-gnu/libopus.so.0",
+        "/usr/lib/libopus.so.0",
+        "/usr/local/lib/libopus.so",
+        "/root/.nix-profile/lib/libopus.so",
+        "/root/.nix-profile/lib/libopus.so.0",
+        "/nix/var/nix/profiles/default/lib/libopus.so",
     ]
+    opus_libs.extend(glob.glob("/nix/store/*libopus*/lib/libopus.so*"))
+    opus_libs.extend(glob.glob("/nix/store/*opus*/lib/libopus.so*"))
+    opus_libs.extend(glob.glob("/usr/lib/**/libopus.so*", recursive=True))
+
     for lib in opus_libs:
         try:
             discord.opus.load_opus(lib)
@@ -268,7 +277,7 @@ def init_opus():
         except Exception:
             continue
 
-    logger.warning("Opus library could not be loaded; voice audio might fail to encode.")
+    logger.critical("Opus library could not be loaded; voice audio might fail to encode.")
     return False
 
 
