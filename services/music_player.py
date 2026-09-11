@@ -17,10 +17,56 @@ import yt_dlp
 
 logger = logging.getLogger("SumairTools.MusicService")
 
+import shutil
+import glob
+
+# Ensure system and nix bin paths are present in os.environ["PATH"]
+for extra_path in (
+    "/root/.nix-profile/bin",
+    "/nix/var/nix/profiles/default/bin",
+    "/home/railway/.nix-profile/bin",
+    "/usr/local/bin",
+    "/usr/bin",
+    "/bin",
+):
+    current_path = os.environ.get("PATH", "")
+    if extra_path not in current_path and os.path.exists(extra_path):
+        os.environ["PATH"] = f"{extra_path}:{current_path}"
+
 # Locate local FFmpeg binary
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 LOCAL_FFMPEG = os.path.join(BASE_DIR, "Sumair Tools Extension", "bin", "ffmpeg.exe")
-FFMPEG_EXECUTABLE = LOCAL_FFMPEG if os.path.exists(LOCAL_FFMPEG) else "ffmpeg"
+
+def get_ffmpeg_binary() -> str:
+    """Robust binary resolver across Windows, Debian, and Nixpacks environments."""
+    if os.path.exists(LOCAL_FFMPEG):
+        return LOCAL_FFMPEG
+
+    found = shutil.which("ffmpeg")
+    if found:
+        return found
+
+    candidates = [
+        "/usr/bin/ffmpeg",
+        "/usr/local/bin/ffmpeg",
+        "/root/.nix-profile/bin/ffmpeg",
+        "/nix/var/nix/profiles/default/bin/ffmpeg",
+        "/home/railway/.nix-profile/bin/ffmpeg",
+        "/bin/ffmpeg",
+    ]
+    for c in candidates:
+        if os.path.isfile(c) and os.access(c, os.X_OK):
+            logger.info(f"Resolved FFmpeg at absolute path: {c}")
+            return c
+
+    nix_matches = glob.glob("/nix/store/*ffmpeg*/bin/ffmpeg")
+    if nix_matches:
+        for m in nix_matches:
+            if os.path.isfile(m) and os.access(m, os.X_OK):
+                logger.info(f"Resolved FFmpeg in nix store: {m}")
+                return m
+
+    return "ffmpeg"
 
 COOKIE_FILE = os.path.join(BASE_DIR, "cookies.txt")
 env_cookies = os.getenv("YOUTUBE_COOKIES")
