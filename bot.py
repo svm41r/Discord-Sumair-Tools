@@ -243,6 +243,24 @@ def init_opus() -> bool:
         logger.info("Opus audio engine is already loaded.")
         return True
 
+    # 1. First priority: Bundled library in repository lib/ directory
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    bundled_dir = os.path.join(base_dir, "lib")
+    if os.path.isdir(bundled_dir):
+        if bundled_dir not in os.environ.get("LD_LIBRARY_PATH", ""):
+            os.environ["LD_LIBRARY_PATH"] = f"{bundled_dir}:{os.environ.get('LD_LIBRARY_PATH', '')}"
+        for bundled_name in ("libopus.so.0", "libopus.so"):
+            bundled_path = os.path.join(bundled_dir, bundled_name)
+            if os.path.isfile(bundled_path):
+                try:
+                    discord.opus.load_opus(bundled_path)
+                    if discord.opus.is_loaded():
+                        logger.info(f"Loaded bundled Opus library from: {bundled_path}")
+                        return True
+                except Exception as be:
+                    logger.warning(f"Could not load bundled Opus at {bundled_path}: {be}")
+
+    # 2. Try default loader
     try:
         if discord.opus._load_default():
             logger.info("Default Opus library loaded successfully.")
