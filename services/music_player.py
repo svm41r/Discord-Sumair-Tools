@@ -20,6 +20,13 @@ logger = logging.getLogger("SumairTools.MusicService")
 import shutil
 import glob
 
+try:
+    import static_ffmpeg
+    static_ffmpeg.add_paths()
+    logger.info("Initialized static_ffmpeg paths.")
+except Exception as e:
+    logger.warning(f"static_ffmpeg initialization skipped/failed: {e}")
+
 # Ensure system and nix bin paths are present in os.environ["PATH"]
 for extra_path in (
     "/root/.nix-profile/bin",

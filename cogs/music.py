@@ -30,7 +30,11 @@ class MusicCog(commands.Cog):
 
         user_voice = interaction.user.voice
         if not user_voice or not user_voice.channel:
-            await interaction.response.send_message("❌ You must join a voice channel first.", ephemeral=True)
+            msg = "❌ You must join a voice channel first."
+            if interaction.response.is_done():
+                await interaction.followup.send(msg, ephemeral=True)
+            else:
+                await interaction.response.send_message(msg, ephemeral=True)
             return None
 
         target_channel = user_voice.channel
@@ -40,10 +44,17 @@ class MusicCog(commands.Cog):
             try:
                 vc = await target_channel.connect(self_deaf=False)
             except Exception as e:
-                await interaction.response.send_message(f"❌ Failed to connect to voice: {e}", ephemeral=True)
+                msg = f"❌ Failed to connect to voice: {e}"
+                if interaction.response.is_done():
+                    await interaction.followup.send(msg, ephemeral=True)
+                else:
+                    await interaction.response.send_message(msg, ephemeral=True)
                 return None
         elif vc.channel.id != target_channel.id:
-            await vc.move_to(target_channel)
+            try:
+                await vc.move_to(target_channel)
+            except Exception as e:
+                logger.warning(f"Could not move voice client: {e}")
 
         return vc
 
