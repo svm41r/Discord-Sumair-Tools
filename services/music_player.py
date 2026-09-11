@@ -22,6 +22,16 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 LOCAL_FFMPEG = os.path.join(BASE_DIR, "Sumair Tools Extension", "bin", "ffmpeg.exe")
 FFMPEG_EXECUTABLE = LOCAL_FFMPEG if os.path.exists(LOCAL_FFMPEG) else "ffmpeg"
 
+COOKIE_FILE = os.path.join(BASE_DIR, "cookies.txt")
+env_cookies = os.getenv("YOUTUBE_COOKIES")
+if env_cookies:
+    try:
+        with open(COOKIE_FILE, "w", encoding="utf-8") as f:
+            f.write(env_cookies.strip())
+        logger.info("Saved YOUTUBE_COOKIES from environment variable to cookies.txt")
+    except Exception as e:
+        logger.warning(f"Could not save YOUTUBE_COOKIES: {e}")
+
 YTDL_OPTIONS = {
     "format": "bestaudio/best",
     "noplaylist": True,
@@ -33,6 +43,10 @@ YTDL_OPTIONS = {
     "default_search": "ytsearch1",
     "js_runtimes": {"node": {}},
 }
+
+if os.path.exists(COOKIE_FILE):
+    YTDL_OPTIONS["cookiefile"] = COOKIE_FILE
+    logger.info(f"Loaded YouTube cookies from {COOKIE_FILE}")
 
 @dataclass
 class Song:
@@ -152,8 +166,34 @@ class MusicService:
 
         def _fetch():
             is_url = query.startswith("http://") or query.startswith("https://")
-            target = query if is_url else f"ytsearch1:{query}"
-            info = self.ytdl.extract_info(target, download=False)
+            info = None
+
+            if is_url:
+                try:
+                    info = self.ytdl.extract_info(query, download=False)
+                except Exception as e:
+                    logger.warning(f"Direct URL extraction failed for '{query}': {e}")
+                    raise e
+            else:
+                # 1. Primary search: YouTube
+                try:
+                    info = self.ytdl.extract_info(f"ytsearch1:{query}", download=False)
+                    if not info or not info.get("entries"):
+                        info = None
+                except Exception as yt_err:
+                    logger.warning(f"YouTube search blocked/failed ({yt_err}). Attempting SoundCloud fallback...")
+                    info = None
+
+                # 2. Resilient fallback search: SoundCloud (never blocked by YouTube bot checks)
+                if not info:
+                    try:
+                        info = self.ytdl.extract_info(f"scsearch1:{query}", download=False)
+                        if info and info.get("entries"):
+                            logger.info(f"Successfully resolved '{query}' via SoundCloud fallback.")
+                    except Exception as sc_err:
+                        logger.error(f"SoundCloud fallback also failed: {sc_err}")
+                        return None
+
             if not info:
                 return None
             if "entries" in info:

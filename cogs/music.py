@@ -81,7 +81,7 @@ class MusicCog(commands.Cog):
         member: discord.Member = interaction.user
         song = await self.music_service.extract_song(query, member)
         if not song or not song.stream_url:
-            await interaction.followup.send("❌ Could not extract audio from the provided query. Try another title or URL.")
+            await interaction.followup.send("❌ Could not extract audio from the query. If a direct YouTube link is blocked by bot verification, try searching by song name or add `YOUTUBE_COOKIES` in Railway.")
             return
 
         state = self.music_service.get_state(interaction.guild_id)
