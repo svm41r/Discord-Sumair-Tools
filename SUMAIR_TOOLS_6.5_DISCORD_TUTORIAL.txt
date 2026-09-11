@@ -1,0 +1,264 @@
+================================================================================
+          🚀 SUMAIR TOOLS v6.5 — OFFICIAL DISCORD MASTER TUTORIAL
+================================================================================
+
+The Ultimate All-In-One AI Automation Suite for Adobe After Effects
+Engineered by: Sumair Ali Siddiqui
+Official Website: https://sumairtools.online/
+Latest Version: v6.5 (Zero-Config Groq Cloud AI Integration)
+
+--------------------------------------------------------------------------------
+TABLE OF CONTENTS:
+--------------------------------------------------------------------------------
+1.  What is Sumair Tools v6.5?
+2.  2-Minute Installation Guide
+3.  Workstation Activation & Licensing
+4.  Module 1: AI Agent Assistant (Groq Cloud AI)
+5.  Module 2: Caption Pro (Quick Transcribe & Hormozi Subtitles)
+6.  Module 3: Auto Cut (Silence Removal & Beat-Sync)
+7.  Module 4: SS to Anim (Screenshot to Animation)
+8.  Module 5: PF Presets & Comp Saver
+9.  Module 6: Master Tools (9-Point Anchor & FPS Converter)
+10. Troubleshooting & FAQ
+11. Support & Community Links
+
+
+================================================================================
+1. WHAT IS SUMAIR TOOLS v6.5?
+================================================================================
+Sumair Tools v6.5 is a custom cyber-suite engineered to automate 90% of tedious, 
+repetitive tasks in Adobe After Effects:
+
+- 🧠 Native Groq Cloud AI: Zero API key setup required. Control AE directly in 
+     plain English with instant ExtendScript JSX generation.
+- 🎙️ Caption Pro 6.5 (Whisper AI): Auto-transcribe video/audio cuts directly 
+     from your timeline into perfectly timed 2-word or 4-word viral Hormozi subtitles.
+- 📸 SS to Anim Pro: Drag & drop UI screenshots (Figma, Twitter, Web) and watch AE 
+     reconstruct them into staggered, animated layers with clean background inpainting!
+- 🎬 Preset Cinema & Comp Saver: 40+ physics shakes, optical zooms, and 1-click comp 
+     dependency bundling.
+- ✂️ Timeline Auto Cut: Automatically slice out dead silence with anti-click crossfades 
+     or mark high-energy musical beats.
+- 🎯 Master Tools: 9-point zero-drift anchor point alignment, 60 FPS converter, 
+     batch sequencer, and nuclear cleaner.
+
+
+================================================================================
+2. 2-MINUTE INSTALLATION GUIDE
+================================================================================
+
+[Option A: 1-Click Automated Installer (Recommended for Windows)]
+1. Download "SumairTools_v6.5.zip" from https://sumairtools.online/ and extract it.
+2. Right-click "Fix_AfterEffects_Extension.bat" and select "Run as Administrator".
+3. The script will automatically:
+   - Close any running After Effects / CEPHtmlEngine processes.
+   - Enable PlayerDebugMode across all CSXS registry keys (CSXS.4 to CSXS.20).
+   - Cleanly deploy the extension to your user & system CEP directories.
+4. Launch Adobe After Effects and navigate to:
+   Window > Extensions > Sumair Tools
+
+[Option B: ZXP Installer (Universal)]
+1. Download "SumairTools_v6.5.zxp" from https://sumairtools.online/
+2. Open ZXP Installer (https://zxpinstaller.com/) or aescripts ZXP Manager.
+3. Drag & drop "SumairTools_v6.5.zxp" into the installer.
+4. Launch After Effects -> Window > Extensions > Sumair Tools.
+
+[Option C: Manual Zip Method]
+1. Extract "SumairTools_v6.5.zip".
+2. Press [Win + R], type: %APPDATA%\Adobe\CEP\extensions  and hit Enter.
+3. Copy the "Sumair Tools Extension" folder into this directory and rename it to:
+   SumairTools
+4. Enable PlayerDebugMode in Windows Registry (HKCU\Software\Adobe\CSXS.10/11/12 -> 
+   String PlayerDebugMode = "1").
+5. Launch After Effects -> Window > Extensions > Sumair Tools.
+
+* PRO TIP: To reload the extension panel without restarting After Effects, click the
+  "v6.5 🔄" version tag in the top-right corner of the panel header!
+
+
+================================================================================
+3. WORKSTATION ACTIVATION & LICENSING
+================================================================================
+When launching for the first time, the cyberpunk License Guard modal will appear:
+
+1. Visit https://sumairtools.online/ and sign in to get your license key.
+2. Enter your key in the format: ST-XXXX-XXXX-XXXX-XXXX
+3. Click "⚡ ACTIVATE WORKSTATION".
+4. The extension cryptographically binds your hardware (HWID) to your account via 
+   Supabase. Your license is saved locally and remains permanently active on that PC.
+
+
+================================================================================
+4. MODULE 1: AI AGENT ASSISTANT (GROQ CLOUD AI)
+================================================================================
+The AI Agent connects After Effects directly to Groq's cloud engine with 
+ZERO API KEY configuration needed!
+
+[Available Models]
+- ⚡ Groq Qwen 3.8 27B (Default & Recommended): Ultra-fast, highly accurate JSX code.
+- 🧠 Groq GPT-OSS 120B: High-level reasoning for complex multi-layer expressions.
+- 🚀 Groq Compound AI: Hybrid cloud inference.
+- 💻 Ollama Local: 100% offline inference (connects to localhost:11434).
+
+[How to Use]
+1. Open the "🤖 AI Agent" tab.
+2. Type any request in plain English into the prompt bar.
+3. (Optional) Click "🖼️" to attach a visual mockup or screenshot.
+4. Hit "➤ Send". The AI streams the ExtendScript code and executes it live in AE!
+
+[Top Prompts to Try]
+• "Create a modern cinematic lower third with a crimson accent bar and slide-in animation"
+• "Add a subtle floating wiggle expression to the position and rotation of the selected layer"
+• "Create a 3D camera rig with an animated orbit around the selected layer"
+• "Scan my active comp, remove all unused layers, and add a master control null"
+• "Generate a 10-second neon glowing grid background with floating dust particles"
+
+
+================================================================================
+5. MODULE 2: CAPTION PRO (WHISPER AI & HORMOZI SUBTITLES)
+================================================================================
+
+[Sub-Tab 1: Quick Transcribe (Whisper AI Engine)]
+Automate speech-to-text directly from your timeline cuts!
+1. Audio Extraction:
+   - If you made cuts/edits on your timeline, click "🎙️ Comp to WAV". 
+     This renders active timeline cuts into a 16-bit WAV file so your subtitles 
+     match your cuts 100% with zero drift!
+   - Or select an audio/video layer and click "🎯 Grab Layer", or click "📁 Browse".
+2. Words Per Layer:
+   - Select "🔥 2x" (Reels / TikTok / Shorts) or "⚡ 4x" (Standard Short-Form).
+3. Transcribe:
+   - Click "⚡ Transcribe & Export SRT". Whisper AI generates "captions.srt" in your 
+     Downloads folder.
+4. Build in After Effects:
+   - Click "🎬 Build AE" to automatically generate synchronized subtitle layers!
+
+[Sub-Tab 2: Normal Captions (The Priority #1 Pipeline)]
+The legendary 1-click automated subtitle styling pipeline:
+1. "⚡ AUTO PROCESS ALL CAPTIONS":
+   Automatically runs: 1. SRT Import -> 2. Clean Punctuation -> 3. 2x/4x Line Break 
+   -> 4. Caption Split -> 5. Apply Styling Presets.
+2. "🔗 Fix Merge Caption & Extend Rails":
+   Repairs overlapping captions and extends dual-rail adjustment layers comp-wide.
+3. "💥 Explode Caption Words":
+   Explodes single text layers into individual word layers (Horizontal or Vertical).
+4. "⏶ Typography Shifter":
+   Use "▲ Shift Word Up" or "▼ Shift Word Down" to move words between lines without retyping.
+5. "✨ Text Animation Presets":
+   Apply viral presets in 1-click: TextOpac, TextUp, TextDown, Sweap, 3/4 Words Red.
+6. "🧹 Sanitize & Cleanup":
+   Capitalize first letters, clean punctuation (! . ,), and censor profanity automatically.
+
+
+================================================================================
+6. MODULE 3: AUTO CUT (SILENCE REMOVAL & BEAT-SYNC)
+================================================================================
+
+[Mode 1: 🎙️ Silence Removal]
+1. Select your audio/video layer in the timeline.
+2. Set your parameters:
+   - Silence Threshold: e.g. -40 dB
+   - Min Silence Duration: e.g. 0.5 sec
+   - Clip Padding: e.g. 8 frames (guard frames to prevent clipped syllables)
+   - Audio Crossfades: Keep ON (2 frames) to eliminate audio pops and clicks.
+3. Click "✂️ AUTO-CUT TIMELINE". Pauses are sliced and removed automatically!
+
+[Mode 2: 🎵 Beat Markers]
+1. Select your music track layer.
+2. Set Peak Sensitivity (1-10) and Min Beat Gap (sec).
+3. Click "✂️ MARK BEATS" to drop timeline markers on the highest musical beats!
+
+
+================================================================================
+7. MODULE 4: SS TO ANIM (SCREENSHOT TO ANIMATION)
+================================================================================
+Turn static UI screenshots into animated motion graphics!
+
+1. Open the "📸 SS to Anim" tab.
+2. Drag & drop any screenshot (PNG, JPG, WebP) from Figma, X/Twitter, Discord, etc.
+3. Computer vision breaks down the image:
+   - Text Blocks
+   - Vector Shapes & Buttons
+   - Icons & Badges
+   - Images & Avatars
+4. Customize your animation:
+   - Presets: Slide Up, Slide Down, Pop Scale, Fade In, etc.
+   - Stagger: e.g. 0.06s between elements
+   - Duration: e.g. 20 frames
+   - Offset Distance: e.g. 80px
+   - Clean Background Plate: Erases elements from the background plate automatically.
+5. Click "🚀 Reconstruct in After Effects". Comps are built and keyframed instantly!
+
+
+================================================================================
+8. MODULE 5: PF PRESETS & COMP SAVER
+================================================================================
+
+[Comp Saver]
+1. Select any composition in your Project panel or timeline.
+2. Open "🎬 PF Presets > COMP SAVER".
+3. Enter a preset name and category (e.g. "Lower Thirds", "Hooks", "Transitions").
+4. Check "SAVE PREVIEW AS GIF" to generate an animated thumbnail.
+5. Click "SAVE". The comp and all its dependencies are saved to your library!
+6. Click any saved card in future projects to import it with 1 click.
+
+[FFX Presets Deck]
+1. Switch to "FFX PRESETS".
+2. Drag & drop your favorite .ffx files into the drop zone.
+3. Click any preset card to apply camera shakes, zooms, glows, or glitches to your layers!
+
+
+================================================================================
+9. MODULE 6: MASTER TOOLS (9-POINT ANCHOR & FPS CONVERTER)
+================================================================================
+
+[9-Point Zero-Drift Anchor Point Alignment]
+Click any direction on the 3x3 grid (↖, ⬆, ↗, ⬅, ☉, ➡, ↙, ⬇, ↘) to snap the anchor 
+point of all selected layers to that corner/edge WITHOUT moving the layer on screen!
+
+[Shortcuts & Layer Utilities]
+- 🔲 Null Add & Parent: Centered master null controller parented to selected layers.
+- 📦 UnPrecomp Layer: Unpacks a pre-comp back into the current timeline.
+- ☢ Nuclear Cleaner: Wipes unused assets, empty folders, and orphaned solids.
+- 📌 Layer Marker: Places a marker at the current playhead.
+- ⏱ Trim Comp to Playhead: Trims composition work area to the playhead.
+- 🎬 Add to Render Queue: Adds selected comps directly to the Render Queue.
+
+[Timeline & FPS Changer]
+- ⚡ 30 ➔ 60 FPS / 60 ➔ 30 FPS: Framerate conversion preserving keyframe timings.
+- ⏱ Time Remap Keys: Instant time remap keys at in/out points.
+- 🔢 Batch Sequence: Staggers selected layers sequentially across the timeline.
+
+
+================================================================================
+10. TROUBLESHOOTING & FAQ
+================================================================================
+
+Q1: The extension panel is blank / white screen.
+Fix: Run "Fix_AfterEffects_Extension.bat" as Administrator. This sets PlayerDebugMode=1
+     in the Windows Registry so unsigned extensions load properly.
+
+Q2: My subtitles don't match my audio cuts.
+Fix: Click "🎙️ Comp to WAV" in Quick Transcribe. This renders your exact timeline cuts
+     to WAV so Whisper AI transcribes the edited audio rather than the raw file.
+
+Q3: How do I reload the extension without restarting After Effects?
+Fix: Click the "v6.5 🔄" tag in the top-right header of the extension!
+
+Q4: Machine Mismatch error on license activation.
+Fix: License keys are locked to 1 PC HWID. Message Sumair on Discord if you switched
+     PCs or reinstalled Windows to reset your hardware binding.
+
+
+================================================================================
+11. SUPPORT & COMMUNITY LINKS
+================================================================================
+
+Official Website: https://sumairtools.online/
+GitHub Mirror:    https://github.com/svm41r/SumairTools
+Creator:          Sumair Ali Siddiqui
+Discord Help:     Post in #support or ping @Sumair on Discord!
+
+================================================================================
+                      ENJOY EDITING WITH SUMAIR TOOLS v6.5!
+================================================================================
