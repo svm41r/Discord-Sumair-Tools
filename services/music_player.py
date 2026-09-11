@@ -161,9 +161,11 @@ class GuildMusicState:
             if user_agent:
                 before_opts += f' -user_agent "{user_agent}"'
 
+            ffmpeg_bin = get_ffmpeg_binary()
+            logger.info(f"Invoking FFmpeg executable: {ffmpeg_bin}")
             raw_source = discord.FFmpegPCMAudio(
                 next_song.stream_url,
-                executable=FFMPEG_EXECUTABLE,
+                executable=ffmpeg_bin,
                 before_options=before_opts,
                 options="-vn",
             )
