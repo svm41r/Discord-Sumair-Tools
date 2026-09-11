@@ -31,12 +31,7 @@ YTDL_OPTIONS = {
     "quiet": True,
     "no_warnings": True,
     "default_search": "ytsearch1",
-    "source_address": "0.0.0.0",
-    "extractor_args": {
-        "youtube": {
-            "player_client": ["android", "web"]
-        }
-    },
+    "js_runtimes": {"node": {}},
 }
 
 @dataclass
@@ -70,6 +65,7 @@ class GuildMusicState:
         self.queue: List[Song] = []
         self.current: Optional[Song] = None
         self.volume: float = 1.0  # 100% volume by default
+        self.text_channel: Optional[Any] = None
         self.loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()
 
     def get_voice_client(self) -> Optional[discord.VoiceClient]:
@@ -81,6 +77,11 @@ class GuildMusicState:
     def play_next(self, error=None):
         if error:
             logger.error(f"Playback error in guild {self.guild_id}: {error}")
+            if self.text_channel:
+                asyncio.run_coroutine_threadsafe(
+                    self.text_channel.send(f"⚠️ Audio playback stopped: `{error}`"),
+                    self.loop
+                )
 
         vc = self.get_voice_client()
         if not vc or not vc.is_connected():
@@ -95,12 +96,10 @@ class GuildMusicState:
         self.current = next_song
 
         try:
-            # Build headers argument to avoid YouTube 403 Forbidden
-            header_str = "".join(f"{k}: {v}\r\n" for k, v in next_song.http_headers.items())
-            if header_str:
-                before_opts = f'-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5 -headers "{header_str}"'
-            else:
-                before_opts = "-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5"
+            user_agent = next_song.http_headers.get("User-Agent", "")
+            before_opts = "-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5"
+            if user_agent:
+                before_opts += f' -user_agent "{user_agent}"'
 
             raw_source = discord.FFmpegPCMAudio(
                 next_song.stream_url,
@@ -112,7 +111,12 @@ class GuildMusicState:
             vc.play(source, after=lambda e: self.loop.call_soon_threadsafe(self.play_next, e))
             logger.info(f"Now transmitting audio in guild {self.guild_id}: {next_song.title}")
         except Exception as e:
-            logger.error(f"Error starting track '{next_song.title}': {e}")
+            logger.exception(f"Error starting track '{next_song.title}': {e}")
+            if self.text_channel:
+                asyncio.run_coroutine_threadsafe(
+                    self.text_channel.send(f"❌ Failed to stream audio for **{next_song.title}**: `{e}`"),
+                    self.loop
+                )
             self.play_next()
 
 

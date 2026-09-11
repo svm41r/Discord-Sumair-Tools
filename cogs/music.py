@@ -85,6 +85,7 @@ class MusicCog(commands.Cog):
             return
 
         state = self.music_service.get_state(interaction.guild_id)
+        state.text_channel = interaction.channel
 
         if vc.is_playing() or vc.is_paused():
             state.queue.append(song)

@@ -236,11 +236,49 @@ def register_error_handlers(bot: SumairToolsBot):
                 await interaction.response.send_message(msg, ephemeral=True)
 
 
+def init_opus():
+    """Ensure libopus is loaded for Discord voice on Linux containers & Windows."""
+    import discord.opus
+    if discord.opus.is_loaded():
+        logger.info("Opus audio engine is already loaded.")
+        return True
+
+    try:
+        discord.opus._load_default()
+        if discord.opus.is_loaded():
+            logger.info("Default Opus library loaded successfully.")
+            return True
+    except Exception:
+        pass
+
+    opus_libs = [
+        "libopus.so.0",
+        "libopus.so",
+        "opus",
+        "/usr/lib/libopus.so.0",
+        "/usr/lib/x86_64-linux-gnu/libopus.so.0",
+        "/usr/lib/aarch64-linux-gnu/libopus.so.0",
+    ]
+    for lib in opus_libs:
+        try:
+            discord.opus.load_opus(lib)
+            if discord.opus.is_loaded():
+                logger.info(f"Loaded Opus library from: {lib}")
+                return True
+        except Exception:
+            continue
+
+    logger.warning("Opus library could not be loaded; voice audio might fail to encode.")
+    return False
+
+
 def main():
     """Bot startup and token validation."""
     if not config.DISCORD_TOKEN or config.DISCORD_TOKEN == "your_bot_token_here":
         logger.critical("DISCORD_TOKEN is missing or empty! Please configure .env.")
         sys.exit(1)
+
+    init_opus()
 
     bot = SumairToolsBot()
     register_error_handlers(bot)
