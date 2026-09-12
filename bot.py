@@ -95,21 +95,21 @@ class SumairToolsBot(commands.Bot):
             except Exception as e:
                 logger.exception(f"Failed to load extension {cog}: {e}")
 
-        # 3. Synchronize Slash Commands
+        # 3. Synchronize Slash Commands (Global + Guild)
+        try:
+            global_synced = await self.tree.sync()
+            logger.info(f"Synchronized {len(global_synced)} global slash commands across all servers.")
+        except Exception as e:
+            logger.error(f"Global command sync error: {e}")
+
         if config.GUILD_ID:
             guild_obj = discord.Object(id=config.GUILD_ID)
             self.tree.copy_global_to(guild=guild_obj)
             try:
                 synced = await self.tree.sync(guild=guild_obj)
-                logger.info(f"Synchronized {len(synced)} guild slash commands for {config.GUILD_ID}")
+                logger.info(f"Synchronized {len(synced)} instant guild slash commands for {config.GUILD_ID}")
             except Exception as e:
                 logger.error(f"Guild command sync deferred: {e}")
-        else:
-            try:
-                synced = await self.tree.sync()
-                logger.info(f"Synchronized {len(synced)} global application commands.")
-            except Exception as e:
-                logger.error(f"Global command sync error: {e}")
 
         # 4. Optional Cloud Healthcheck Server (For Render.com Web Services)
         import os
