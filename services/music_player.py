@@ -116,7 +116,11 @@ class Song:
     def formatted_duration(self) -> str:
         if not self.duration:
             return "Live Stream / Unknown"
-        mins, secs = divmod(self.duration, 60)
+        try:
+            total_secs = int(float(self.duration))
+        except (ValueError, TypeError):
+            return "Unknown"
+        mins, secs = divmod(total_secs, 60)
         hours, mins = divmod(mins, 60)
         if hours > 0:
             return f"{hours:02d}:{mins:02d}:{secs:02d}"
