@@ -1,0 +1,250 @@
+"""
+Sumair Tools Core - Welcome and Onboarding Cog
+==============================================
+Automated, high-fidelity welcome messages for new members.
+Configurable per-guild via slash commands with custom embeds,
+placeholders, and database persistence.
+"""
+
+import os
+import sqlite3
+import logging
+from datetime import datetime
+from typing import Optional, Dict, Any
+import discord
+from discord import app_commands
+from discord.ext import commands
+import config
+
+logger = logging.getLogger("SumairTools.WelcomeCog")
+
+DB_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
+DB_PATH = os.path.join(DB_DIR, "welcome.db")
+
+
+class WelcomeDB:
+    """Persistent SQLite database storing welcome channel configurations per guild."""
+
+    def __init__(self, db_path: str = DB_PATH):
+        self.db_path = db_path
+        os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
+        self._init_db()
+
+    def _get_conn(self) -> sqlite3.Connection:
+        conn = sqlite3.connect(self.db_path)
+        conn.row_factory = sqlite3.Row
+        return conn
+
+    def _init_db(self):
+        with self._get_conn() as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS welcome_settings (
+                    guild_id TEXT PRIMARY KEY,
+                    channel_id TEXT NOT NULL,
+                    custom_message TEXT,
+                    banner_url TEXT,
+                    enabled INTEGER DEFAULT 1,
+                    updated_at TEXT NOT NULL
+                )
+            """)
+            conn.commit()
+
+    def set_welcome(self, guild_id: int, channel_id: int, custom_message: Optional[str] = None, banner_url: Optional[str] = None) -> None:
+        now = discord.utils.utcnow().isoformat()
+        with self._get_conn() as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+                INSERT INTO welcome_settings (guild_id, channel_id, custom_message, banner_url, enabled, updated_at)
+                VALUES (?, ?, ?, ?, 1, ?)
+                ON CONFLICT(guild_id) DO UPDATE SET
+                    channel_id = excluded.channel_id,
+                    custom_message = excluded.custom_message,
+                    banner_url = excluded.banner_url,
+                    enabled = 1,
+                    updated_at = excluded.updated_at
+            """, (str(guild_id), str(channel_id), custom_message, banner_url, now))
+            conn.commit()
+
+    def get_welcome(self, guild_id: int) -> Optional[Dict[str, Any]]:
+        with self._get_conn() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM welcome_settings WHERE guild_id = ?", (str(guild_id),))
+            row = cursor.fetchone()
+            if row:
+                return dict(row)
+            return None
+
+    def disable_welcome(self, guild_id: int) -> bool:
+        with self._get_conn() as conn:
+            cursor = conn.cursor()
+            cursor.execute("UPDATE welcome_settings SET enabled = 0 WHERE guild_id = ?", (str(guild_id),))
+            conn.commit()
+            return cursor.rowcount > 0
+
+
+class WelcomeCog(commands.Cog):
+    """Automated member greeting and onboarding system."""
+
+    def __init__(self, bot: commands.Bot):
+        self.bot = bot
+        self.db = WelcomeDB()
+
+    def build_welcome_embed(self, member: discord.Member, custom_msg: Optional[str] = None, banner_url: Optional[str] = None) -> discord.Embed:
+        guild = member.guild
+        embed = discord.Embed(
+            title=f"👋 WELCOME TO {guild.name.upper()}",
+            color=config.COLOR_CRIMSON,
+            timestamp=discord.utils.utcnow()
+        )
+
+        if custom_msg:
+            formatted = custom_msg.replace("{user}", member.mention) \
+                                  .replace("{username}", member.name) \
+                                  .replace("{server}", guild.name) \
+                                  .replace("{count}", str(guild.member_count))
+            embed.description = formatted
+        else:
+            embed.description = (
+                f"Welcome {member.mention} to **{guild.name}**!\n\n"
+                f"We are excited to have you here. Please make sure to review the server rules "
+                f"and introduce yourself to the community!"
+            )
+
+        embed.set_thumbnail(url=member.display_avatar.url)
+        embed.add_field(name="📅 Account Created", value=f"<t:{int(member.created_at.timestamp())}:R>", inline=True)
+        embed.add_field(name="👥 Member Count", value=f"#{guild.member_count}", inline=True)
+
+        if banner_url:
+            embed.set_image(url=banner_url)
+
+        embed.set_footer(text=f"User ID: {member.id} • Fortress Onboarding Engine")
+        return embed
+
+    @commands.Cog.listener()
+    async def on_member_join(self, member: discord.Member) -> None:
+        """Listens for new members and sends the welcome embed to the designated channel."""
+        if member.bot:
+            return
+
+        settings = self.db.get_welcome(member.guild.id)
+        if not settings or not settings.get("enabled"):
+            return
+
+        channel_id = int(settings["channel_id"])
+        channel = member.guild.get_channel(channel_id)
+        if not channel or not isinstance(channel, discord.TextChannel):
+            logger.warning(f"Welcome channel {channel_id} in {member.guild.name} not found or not a text channel.")
+            return
+
+        permissions = channel.permissions_for(member.guild.me)
+        if not permissions.send_messages or not permissions.embed_links:
+            logger.warning(f"Missing send_messages or embed_links permissions in welcome channel {channel.name}.")
+            return
+
+        try:
+            embed = self.build_welcome_embed(
+                member,
+                custom_msg=settings.get("custom_message"),
+                banner_url=settings.get("banner_url")
+            )
+            await channel.send(content=f"👋 Welcome {member.mention}!", embed=embed)
+            logger.info(f"Dispatched welcome greeting for {member.name} in {member.guild.name} -> #{channel.name}")
+        except Exception as e:
+            logger.error(f"Failed sending welcome message for {member.name} in {member.guild.name}: {e}")
+
+    @app_commands.command(name="setwelcome", description="Configure the automatic welcome channel and greeting.")
+    @app_commands.describe(
+        channel="The text channel where welcome messages should be posted",
+        message="Optional custom greeting text (supports {user}, {username}, {server}, {count})",
+        banner_url="Optional direct image/GIF URL for the embed banner"
+    )
+    @app_commands.guild_only()
+    @app_commands.default_permissions(manage_guild=True)
+    async def set_welcome_cmd(
+        self,
+        interaction: discord.Interaction,
+        channel: discord.TextChannel,
+        message: Optional[str] = None,
+        banner_url: Optional[str] = None
+    ):
+        """Sets up or updates the welcome system for this server."""
+        perms = channel.permissions_for(interaction.guild.me)
+        if not perms.send_messages or not perms.embed_links:
+            await interaction.response.send_message(
+                f"❌ I need Send Messages and Embed Links permissions in {channel.mention} to post welcome cards.",
+                ephemeral=True
+            )
+            return
+
+        self.db.set_welcome(
+            guild_id=interaction.guild_id,
+            channel_id=channel.id,
+            custom_message=message,
+            banner_url=banner_url
+        )
+
+        preview_embed = self.build_welcome_embed(
+            interaction.user,
+            custom_msg=message,
+            banner_url=banner_url
+        )
+
+        response_embed = discord.Embed(
+            title="🛡️ WELCOME SYSTEM CONFIGURED",
+            description=(
+                f"Automatic member greetings are now **ACTIVE**!\n\n"
+                f"📌 **Channel**: {channel.mention}\n"
+                f"💬 **Custom Message**: {f'`{message}`' if message else '*Default Greeting*'}\n"
+                f"🖼️ **Banner**: {f'[View Banner]({banner_url})' if banner_url else '*None*'}\n\n"
+                f"*(Below is a live preview of how new members will be greeted)*"
+            ),
+            color=config.COLOR_SUCCESS
+        )
+
+        await interaction.response.send_message(embeds=[response_embed, preview_embed], ephemeral=True)
+
+    @app_commands.command(name="testwelcome", description="Send a test welcome message to your configured welcome channel.")
+    @app_commands.guild_only()
+    @app_commands.default_permissions(manage_guild=True)
+    async def test_welcome_cmd(self, interaction: discord.Interaction):
+        """Simulates a welcome greeting in the configured channel."""
+        settings = self.db.get_welcome(interaction.guild_id)
+        if not settings or not settings.get("enabled"):
+            await interaction.response.send_message(
+                "❌ No welcome channel is currently configured. Use `/setwelcome` first.",
+                ephemeral=True
+            )
+            return
+
+        channel_id = int(settings["channel_id"])
+        channel = interaction.guild.get_channel(channel_id)
+        if not channel or not isinstance(channel, discord.TextChannel):
+            await interaction.response.send_message(
+                f"❌ The configured welcome channel (ID: `{channel_id}`) no longer exists. Please re-run `/setwelcome`.",
+                ephemeral=True
+            )
+            return
+
+        embed = self.build_welcome_embed(
+            interaction.user,
+            custom_msg=settings.get("custom_message"),
+            banner_url=settings.get("banner_url")
+        )
+        await channel.send(content=f"🧪 *(Test Greeting)* 👋 Welcome {interaction.user.mention}!!", embed=embed)
+        await interaction.response.send_message(f"✅ Test welcome message dispatched to {channel.mention}!", ephemeral=True)
+
+    @app_commands.command(name="removewelcome", description="Disable automatic welcome messages for this server.")
+    @app_commands.guild_only()
+    @app_commands.default_permissions(manage_guild=True)
+    async def remove_welcome_cmd(self, interaction: discord.Interaction):
+        """Disables the welcome system for the guild."""
+        success = self.db.disable_welcome(interaction.guild_id)
+        if success:
+            await interaction.response.send_message("✅ Welcome greeting system has been **disabled** for this server.", ephemeral=True)
+        else:
+            await interaction.response.send_message("ℹ️ Welcome system was not active on this server.", ephemeral=True)
+
+
+async def setup(bot: commands.Bot):
+    await bot.add_cog(WelcomeCog(bot))

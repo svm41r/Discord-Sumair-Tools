@@ -87,6 +87,7 @@ class SumairToolsBot(commands.Bot):
             "cogs.utility",
             "cogs.music",
             "cogs.tempvoice",
+            "cogs.welcome",
         ]
         for cog in cogs:
             try:
