@@ -10,6 +10,7 @@ Theme: Minimalist Dark Industrial with Crimson Red accents (0xFF0033).
 Author: Principal Systems Engineer & Cybersecurity Lead
 """
 
+import os
 import sys
 import logging
 import asyncio
